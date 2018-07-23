@@ -14,15 +14,6 @@ var client = new Twitter(keys.twitter);
 var argumentOne = process.argv[2];
 var argumentTwo = process.argv[3];
 
-
-// /* Open Random.txt and read default search options */
-// fs.open('./random.txt', 'r', (err, fd) => {
-//     if (err) throw err;
-//     fs.close(fd, (err) => {
-//         if (err) throw err;
-//     });
-// });
-
 /* If it is "do-what-it-says", load that file as argv[2] and arg[3]  */
 if (argumentOne === "do-what-it-says") {
     var fileContents = fs.readFileSync("./random.txt", "utf8");
@@ -76,6 +67,7 @@ function spotifyThatJawn(songName) {
                 });
             }
             console.log(songsInfo);
+            fs.appendFileSync("./log.txt", songsInfo);
         })
         .catch(function (err) {
             console.log(err);
@@ -120,10 +112,10 @@ function tweetJawn() {
         if (!error) {
             tweets.forEach(function (uselessChatter) {
                 var tweetString = "";
-                //To DO, convert uslessChatter.created_at to local time.
-                //var tweetDate = new Date(uselessChatter.created_at);
-                tweetString = "On " + uselessChatter.created_at + " " + uselessChatter.user.name + "(@" + uselessChatter.user.screen_name + ") tweeted:\n";
-                tweetString += uselessChatter.text + "\n";
+                var dateString = formatDate(uselessChatter.created_at);
+                tweetString = "On " + dateString + " " + uselessChatter.user.name + "(@" + uselessChatter.user.screen_name + ") tweeted:\n";
+                tweetString += uselessChatter.text + "\n\n";
+                fs.appendFileSync("./log.txt", tweetString)
                 console.log(tweetString);
             })
         }
@@ -132,6 +124,13 @@ function tweetJawn() {
         }
     });
 
+}
+
+function formatDate(dateString) {
+    var toDate = new Date(dateString);
+    dateString = toDate.toLocaleDateString("EN-us", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    dateString += " at " + toDate.toLocaleTimeString();
+    return dateString;
 }
 /** End Twitter Functions **/
 
@@ -155,6 +154,7 @@ function movieJawn(movie) {
             movieString += "Language: " + result.Language + "\n";
             movieString += "Plot Summary: " + result.Plot + "\n";
             movieString += "Actors: " + result.Actors;
+            fs.appendFileSync("./log.txt", movieString);
             console.log(movieString);
         })
         .catch(function (error) {
